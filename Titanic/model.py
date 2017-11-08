@@ -4,6 +4,7 @@ from pandas import Series,DataFrame
 import matplotlib.pyplot as plt
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC, LinearSVC
 from sklearn import linear_model, discriminant_analysis, cross_validation
 from sklearn.preprocessing import MinMaxScaler
 train = pd.read_csv('./Data/train.csv')
@@ -19,6 +20,12 @@ X_test['Embarked'].fillna('S',inplace=True)
 X_train['Age'].fillna(X_train['Age'].mean(),inplace=True)
 X_test['Age'].fillna(X_test['Age'].mean(),inplace=True)
 X_test['Fare'].fillna(X_test['Fare'].mean(),inplace = True)
+"""
+X_train.loc[(X_train.Cabin.isnull()), 'Cabin'] = 0
+X_train.loc[(X_train.Cabin.notnull()), 'Cabin'] = 1
+X_test.loc[(X_train.Cabin.isnull()), 'Cabin'] = 0
+X_test.loc[(X_train.Cabin.notnull()), 'Cabin'] = 1
+"""
 def normalization(x, name):
     xmin = min(x[name])
     xmax = max(x[name])
@@ -36,11 +43,14 @@ X_train = dict_vec.fit_transform(X_train.to_dict(orient='record'))
 X_test = dict_vec.fit_transform(X_test.to_dict(orient='record'))
 #train_x = DataFrame(X_train,columns=list(dict_vec.feature_names_))
 #train_x.to_csv('train_x.csv')
-regr = linear_model.LogisticRegression()
-regr.fit(X_train,y_train)
-y_predict = regr.predict(X_test)
-#rfc = RandomForestClassifier()
+#regr = linear_model.LogisticRegression()
+#regr.fit(X_train,y_train)
+#y_predict = regr.predict(X_test)
+svc = SVC()
+svc.fit(X_train, y_train)
+y_predict = svc.predict(X_test)
+#rfc = RandomForestClassifier(n_estimators=100)
 #rfc.fit(X_train,y_train)
 #y_predict = rfc.predict(X_test)
 regr_submission = DataFrame({'PassengerId':test['PassengerId'].as_matrix(),'Survived':y_predict.astype(np.int32)})
-regr_submission.to_csv('Logisticpredict_norm.csv',index=False)
+regr_submission.to_csv('SVM.csv',index=False)
